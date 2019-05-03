@@ -1,56 +1,108 @@
 package com.auth0.todo.util;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.TextView;
 
 import com.auth0.todo.R;
 import com.auth0.todo.ToDoItem;
+import com.auth0.todo.network.NetworkState;
+import com.auth0.todo.network.Status;
 
-import java.util.ArrayList;
-import java.util.List;
+import androidx.annotation.NonNull;
+import androidx.core.util.Consumer;
+import androidx.paging.PagedListAdapter;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
 
-public class ToDoListAdapter extends BaseAdapter {
-    private LayoutInflater inflater;
-    private List<ToDoItem> toDoList = new ArrayList<>();
+public class ToDoListAdapter extends PagedListAdapter<ToDoItem,RecyclerView.ViewHolder> {
 
-    public ToDoListAdapter(Context context) {
-        inflater = LayoutInflater.from(context);
+    private NetworkState networkState;
+    private Consumer retryFunction;
+
+    public ToDoListAdapter(@NonNull DiffUtil.ItemCallback<ToDoItem> diffCallback, Consumer function) {
+        super(diffCallback);
+        this.retryFunction = function;
     }
 
+    @NonNull
     @Override
-    public View getView(int position, View view, ViewGroup parent) {
-        ToDoItem toDoItem = (ToDoItem) getItem(position);
-        if (view == null) {
-            view = inflater.inflate(R.layout.to_do_item, null);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
+        switch (viewType){
+
+            case R.layout.to_do_item:
+                View jobItemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.to_do_item,parent,false);
+                return new ToDoViewHolder(jobItemView);
+
+            case R.layout.loading_item:
+                View loadingItemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.loading_item,parent,false);
+                return new LoaderViewHolder(loadingItemView,retryFunction);
+
         }
 
-        TextView textView = view.findViewById(R.id.to_do_message);
-        textView.setText(toDoItem.getMessage());
+        throw new IllegalArgumentException("Wrong view type");
 
-        return view;
     }
 
     @Override
-    public Object getItem(int position) {
-        return toDoList.get(position);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+
+        switch (getItemViewType(position)) {
+
+            case R.layout.loading_item:
+                ((LoaderViewHolder) holder).bind(networkState);
+                break;
+
+            case R.layout.to_do_item:
+                ((ToDoViewHolder) holder).bind(getItem(position));
+                break;
+
+
+        }
+
+    }
+
+    private Boolean hasExtraRow(){
+        return networkState!=null && networkState.getStatus() != Status.SUCCESS;
     }
 
     @Override
-    public long getItemId(int position) {
-        return position;
+    public int getItemViewType(int position) {
+        if(hasExtraRow() && position == getItemCount() -1){
+            return R.layout.loading_item;
+        } else {
+            return R.layout.to_do_item;
+        }
     }
 
     @Override
-    public int getCount() {
-        return toDoList.size();
+    public int getItemCount() {
+        int count = super.getItemCount();
+        if(hasExtraRow()){
+            count++;
+        }
+        return count;
     }
 
-    public void setToDoList(List<ToDoItem> toDoList) {
-        this.toDoList = toDoList;
-        notifyDataSetChanged();
+
+    public void updateNetworkState(NetworkState networkState) {
+        NetworkState previousState = this.networkState;
+        Boolean hadExtraRow = hasExtraRow();
+
+        this.networkState = networkState;
+        Boolean hasExtraRow = hasExtraRow();
+
+        if (hadExtraRow!=hasExtraRow) {
+            if (hadExtraRow){
+                notifyDataSetChanged();
+            } else {
+                notifyItemInserted(super.getItemCount());
+            }
+        } else if (hasExtraRow && previousState!=networkState){
+            notifyItemChanged(getItemCount() - 1);
+        }
+
     }
+
 }
