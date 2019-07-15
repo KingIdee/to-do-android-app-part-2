@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.auth0.todo.identity.AuthAwareActivity;
-import com.auth0.todo.network.NetworkState;
+import com.auth0.todo.network.Status;
 import com.auth0.todo.network.ToDoDataSourceFactory;
 import com.auth0.todo.util.DiffUtilCallback;
 import com.auth0.todo.util.ToDoListAdapter;
@@ -30,7 +30,7 @@ public class MainActivity extends AuthAwareActivity {
         factory =  new ToDoDataSourceFactory(this);
 
         // create and configure the adapter
-        this.toDoListAdapter = new ToDoListAdapter(new DiffUtilCallback(), x -> factory.gitHubDataSource.getValue().retryFailedRequest());
+        this.toDoListAdapter = new ToDoListAdapter(new DiffUtilCallback(), x -> factory.todoDataSource.getValue().retryFailedRequest());
         RecyclerView microPostsListView = findViewById(R.id.to_do_items);
         microPostsListView.setLayoutManager(new LinearLayoutManager(this));
         microPostsListView.setAdapter(toDoListAdapter);
@@ -46,8 +46,8 @@ public class MainActivity extends AuthAwareActivity {
 
         listLiveData.observe(this, toDoListAdapter::submitList);
 
-        LiveData<NetworkState> networkStateLiveData =
-            Transformations.switchMap(factory.gitHubDataSource, input -> input.status);
+        LiveData<Status> networkStateLiveData =
+            Transformations.switchMap(factory.todoDataSource, input -> input.status);
 
         networkStateLiveData.observe(this, toDoListAdapter::updateNetworkState);
 

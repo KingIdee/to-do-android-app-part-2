@@ -10,7 +10,7 @@ import androidx.paging.DataSource;
 
 public class ToDoDataSourceFactory extends DataSource.Factory<String, ToDoItem> {
 
-  public MutableLiveData<ToDoDataSource> gitHubDataSource = new MutableLiveData<>();
+  public MutableLiveData<ToDoDataSource> todoDataSource = new MutableLiveData<>();
   private ToDoDataSource source;
 
   public ToDoDataSourceFactory(Context context){
@@ -20,7 +20,7 @@ public class ToDoDataSourceFactory extends DataSource.Factory<String, ToDoItem> 
   @NonNull
   @Override
   public DataSource<String, ToDoItem> create() {
-    gitHubDataSource.postValue(source);
+    todoDataSource.postValue(source);
     return source;
   }
 }

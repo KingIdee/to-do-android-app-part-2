@@ -1,11 +1,8 @@
 package com.auth0.todo.network;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.auth0.todo.ToDoItem;
@@ -21,14 +18,13 @@ import androidx.annotation.NonNull;
 import androidx.core.util.Consumer;
 import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PageKeyedDataSource;
-import androidx.paging.PositionalDataSource;
 
-public class ToDoDataSource extends PageKeyedDataSource<String,ToDoItem> {
+public class ToDoDataSource extends PageKeyedDataSource<String, ToDoItem> {
 
   private int pageCount = 1;
   private String url = "http://10.0.2.2:3001";
   private RequestQueue queue;
-  public MutableLiveData<NetworkState> status = new MutableLiveData<>();
+  public MutableLiveData<Status> status = new MutableLiveData<>();
   private Consumer retry;
 
 
@@ -39,15 +35,15 @@ public class ToDoDataSource extends PageKeyedDataSource<String,ToDoItem> {
   @Override
   public void loadInitial(@NonNull PageKeyedDataSource.LoadInitialParams<String> params, @NonNull final LoadInitialCallback<String, ToDoItem> callback) {
 
-    status.postValue(new NetworkState(Status.LOADING));
+    status.postValue(Status.LOADING);
     JsonArrayRequest microPostsRequest = new JsonArrayRequest(url, response -> {
       pageCount++;
       callback.onResult(transformResponse(response), null, String.valueOf(pageCount));
-      status.postValue(new NetworkState(Status.SUCCESS));
+      status.postValue(Status.SUCCESS);
 
 
     }, error -> {
-      status.postValue(new NetworkState(Status.FAILED));
+      status.postValue(Status.FAILED);
       retry = x -> loadInitial(params, callback);
     });
 
@@ -56,20 +52,21 @@ public class ToDoDataSource extends PageKeyedDataSource<String,ToDoItem> {
   }
 
   @Override
-  public void loadBefore(@NonNull LoadParams<String> params, @NonNull final LoadCallback<String, ToDoItem> callback) { }
+  public void loadBefore(@NonNull LoadParams<String> params, @NonNull final LoadCallback<String, ToDoItem> callback) {
+  }
 
   @Override
   public void loadAfter(@NonNull LoadParams<String> params, @NonNull final LoadCallback<String, ToDoItem> callback) {
 
-    status.postValue(new NetworkState(Status.LOADING));
+    status.postValue(Status.LOADING);
     String updatedUrl = url + "?page=" + pageCount;
     JsonArrayRequest microPostsRequest = new JsonArrayRequest(updatedUrl, response -> {
       pageCount++;
-      callback.onResult(transformResponse(response),String.valueOf(pageCount));
-      status.postValue(new NetworkState(Status.SUCCESS));
+      callback.onResult(transformResponse(response), String.valueOf(pageCount));
+      status.postValue(Status.SUCCESS);
 
     }, error -> {
-      status.postValue(new NetworkState(Status.FAILED));
+      status.postValue(Status.FAILED);
       retry = x -> loadAfter(params, callback);
     });
 

@@ -5,7 +5,6 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.auth0.todo.R;
-import com.auth0.todo.network.NetworkState;
 import com.auth0.todo.network.Status;
 
 import androidx.annotation.NonNull;
@@ -23,12 +22,12 @@ public class LoaderViewHolder extends RecyclerView.ViewHolder {
         retryButton.setOnClickListener(v -> retryFunction.accept(null));
     }
 
-    public void bind(NetworkState networkState){
+    public void bind(Status networkState){
 
-        if(networkState.getStatus()==Status.LOADING){
+        if(networkState==Status.LOADING){
             progressBar.setVisibility(View.VISIBLE);
             retryButton.setVisibility(View.GONE);
-        } else if(networkState.getStatus()== Status.SUCCESS){
+        } else if(networkState== Status.SUCCESS){
             progressBar.setVisibility(View.GONE);
             retryButton.setVisibility(View.GONE);
         } else {

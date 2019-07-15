@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 
 import com.auth0.todo.R;
 import com.auth0.todo.ToDoItem;
-import com.auth0.todo.network.NetworkState;
 import com.auth0.todo.network.Status;
 
 import androidx.annotation.NonNull;
@@ -17,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class ToDoListAdapter extends PagedListAdapter<ToDoItem,RecyclerView.ViewHolder> {
 
-    private NetworkState networkState;
+    private Status networkState;
     private Consumer retryFunction;
 
     public ToDoListAdapter(@NonNull DiffUtil.ItemCallback<ToDoItem> diffCallback, Consumer function) {
@@ -64,12 +63,12 @@ public class ToDoListAdapter extends PagedListAdapter<ToDoItem,RecyclerView.View
     }
 
     private Boolean hasExtraRow(){
-        return networkState!=null && networkState.getStatus() != Status.SUCCESS;
+        return networkState!=null && networkState != Status.SUCCESS;
     }
 
     @Override
     public int getItemViewType(int position) {
-        if(hasExtraRow() && position == getItemCount() -1){
+        if(hasExtraRow() && position == getItemCount() - 1){
             return R.layout.loading_item;
         } else {
             return R.layout.to_do_item;
@@ -86,8 +85,8 @@ public class ToDoListAdapter extends PagedListAdapter<ToDoItem,RecyclerView.View
     }
 
 
-    public void updateNetworkState(NetworkState networkState) {
-        NetworkState previousState = this.networkState;
+    public void updateNetworkState(Status networkState) {
+        Status previousState = this.networkState;
         Boolean hadExtraRow = hasExtraRow();
 
         this.networkState = networkState;
