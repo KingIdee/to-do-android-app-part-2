@@ -12,7 +12,7 @@ You need the following installed on your machine:
 
 ### Running the app
 
-To run the app, clone the repository and open the project in Android Studio.
+Clone the repository and open the project in Android Studio. After that, run the app on an emulator.
 
 ### Setting up the backend
 
